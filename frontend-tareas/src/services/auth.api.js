@@ -28,20 +28,23 @@ export function getCsrfFromCookie() {
   return entry ? decodeURIComponent(entry.split('=')[1]) : '';
 }
 
+// API Key fija del frontend (el backend la valida para proteger /login)
+const API_KEY = '123456789';
+
 /**
  * POST /api/auth/login
- * Requiere email en el body y la API Key como header x-api-key.
+ * Envía email + password en el body; la API Key va como header x-api-key.
  * El servidor responde con { success, csrfToken, usuario } y establece las cookies.
  */
-export async function login(email, apiKey) {
+export async function login(email, password) {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method:      'POST',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key':    apiKey
+      'x-api-key':    API_KEY
     },
-    body: JSON.stringify({ email })
+    body: JSON.stringify({ email, password })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || 'Error al iniciar sesión');

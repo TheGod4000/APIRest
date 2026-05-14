@@ -1,37 +1,29 @@
 import { createApp } from 'vue'
-import { createVuetify } from 'vuetify'
-import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
 import App from './App.vue'
+import vuetify from './plugins/vuetify'
+import router from './router'
+import api from './api/http'
+import authStore from './store/auth'
 
-const vuetify = createVuetify({
-  components,
-  directives,
-  theme: {
-    defaultTheme: 'dark',
-    themes: {
-      dark: {
-        colors: {
-          primary: '#42b883',
-          secondary: '#35495e',
-          accent: '#7c4dff',
-          error: '#ff5252',
-          success: '#4caf50',
-          warning: '#ffc107',
-          info: '#2196f3'
-        }
-      },
-      light: {
-        colors: {
-          primary: '#42b883',
-          secondary: '#35495e',
-          accent: '#7c4dff'
-        }
-      }
-    }
+async function bootstrap() {
+  // Pre-fetch CSRF token so subsequent mutating requests have it
+  try {
+    await api.get('/csrf')
+  } catch (e) {
+    // ignore — UI will still mount
   }
-})
 
-createApp(App).use(vuetify).mount('#app')
+  // Try to restore session
+  try {
+    await authStore.loadMe()
+  } catch (e) {
+    // ignore
+  }
+
+  const app = createApp(App)
+  app.use(vuetify)
+  app.use(router)
+  app.mount('#app')
+}
+
+bootstrap()
